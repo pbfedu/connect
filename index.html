@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Conecta Números</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div id="start-screen" class="screen active">
+        <div class="menu-container">
+            <h1>Conecta Números</h1>
+            <div class="difficulty-menu">
+                <h2>Dificultad</h2>
+                <div class="difficulty-options">
+                    <button class="difficulty-btn active" data-difficulty="facil">Fácil</button>
+                    <button class="difficulty-btn" data-difficulty="normal">Normal</button>
+                    <button class="difficulty-btn" data-difficulty="dificil">Difícil</button>
+                </div>
+            </div>
+            <button id="start-game-btn" class="main-btn">Empezar</button>
+        </div>
+    </div>
+
+    <div id="game-screen" class="screen">
+        <div class="game-container">
+            <header>
+                <div class="header-left">
+                    <span id="score-display">0</span>
+                </div>
+                <div class="header-center">
+                    <h1>Suma: <span id="target-number"></span></h1>
+                </div>
+                <div class="header-right">
+                    <div id="timer">1:30</div>
+                </div>
+            </header>
+            <div class="current-sum-display" id="current-sum-display">
+                <span id="sum-text">???</span>
+                <span id="feedback-text" class="feedback-text"></span>
+            </div>
+            <div class="grid-wrapper">
+                <svg id="lines-svg"></svg>
+                <div id="grid-container" class="grid-container"></div>
+            </div>
+        </div>
+        <div id="gold-confetti-container"></div>
+    </div>
+
+    <div id="end-game-screen" class="screen">
+        <div class="end-game-container">
+            <h2>¡Tiempo terminado!</h2>
+            <p>Tu puntuación final es:</p>
+            <span id="final-score">0</span>
+            <p id="extra-time-display" style="display: none;"></p>
+            <button id="restart-game-btn" class="main-btn">Volver a jugar</button>
+        </div>
+    </div>
+
+    <audio id="correct-audio" src="correct.wav"></audio>
+    <audio id="game-over-audio" src="end.wav"></audio>
+    <script src="script.js"></script>
+</body>
+</html>
