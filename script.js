@@ -6,7 +6,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const startGameBtn = document.getElementById('start-game-btn');
     const restartGameBtn = document.getElementById('restart-game-btn');
     
+    const modeButtons = document.querySelectorAll('.mode-btn');
+    const difficultyMenu = document.getElementById('difficulty-menu');
     const difficultyButtons = document.querySelectorAll('.difficulty-btn');
+    const powerupButtons = document.querySelectorAll('.powerup-btn');
 
     const gridContainer = document.getElementById('grid-container');
     const targetNumberDisplay = document.getElementById('target-number');
@@ -17,10 +20,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const timerDisplay = document.getElementById('timer');
     const finalScoreDisplay = document.getElementById('final-score');
     const extraTimeDisplay = document.getElementById('extra-time-display');
-    const goldConfettiContainer = document.getElementById('gold-confetti-container');
-    
-    const correctAudio = new Audio('correct.mp3');
-    const gameOverAudio = new Audio('game-over.mp3');
+    const comboAnimationContainer = document.getElementById('combo-animation-container');
+    const comboText = document.getElementById('combo-text');
+    const powerupsContainer = document.getElementById('powerups-container');
+
+    const correctAudio = new Audio('correct.wav');
+    const gameOverAudio = new Audio('end.wav');
 
     let targetNumber;
     let selectedCircles = [];
@@ -28,14 +33,31 @@ document.addEventListener('DOMContentLoaded', () => {
     let score = 0;
     let timer;
     let timeLeft;
+    let isTimerFrozen = false;
     let isGameOver = false;
     let difficulty = 'facil';
+    let gameMode = 'normal';
     let feedbackTimeout;
     let goldCircleInterval;
     let extraTimeWon = 0;
+    let activePowerup = null;
 
     const ROWS = 4;
     const COLS = 4;
+
+    const cooldowns = {
+        bomb: 20,
+        freeze: 45,
+        clearline: 35
+    };
+    
+    const comboMultipliers = {
+        2: 1, 
+        3: 2,
+        4: 3,
+        5: 4,
+        6: 5,
+    };
 
     // --- Screen Management ---
     function showScreen(screenId) {
@@ -52,42 +74,56 @@ document.addEventListener('DOMContentLoaded', () => {
         showScreen('start-screen');
     });
 
-    // --- Difficulty Buttons Logic ---
+    // --- Menu Buttons Logic ---
+    modeButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            modeButtons.forEach(btn => btn.classList.remove('active'));
+            button.classList.add('active');
+            gameMode = button.dataset.mode;
+            
+            if (gameMode === 'normal') {
+                difficultyMenu.classList.remove('hidden');
+            } else {
+                difficultyMenu.classList.add('hidden');
+            }
+            updateStartButtonColor();
+        });
+    });
+
     difficultyButtons.forEach(button => {
         button.addEventListener('click', () => {
             difficultyButtons.forEach(btn => btn.classList.remove('active'));
             button.classList.add('active');
             difficulty = button.dataset.difficulty;
-            updateDifficultyStyles();
+            updateStartButtonColor();
         });
     });
 
-    function updateDifficultyStyles() {
-        let color = 'var(--duo-green)';
-        let btnColor = 'var(--duo-dark-green)';
-        let hoverColor = '#d1d1d1';
+    function updateStartButtonColor() {
+        let color, btnColor;
         
-        if (difficulty === 'normal') {
-            color = 'var(--duo-blue)';
-            btnColor = '#1a8ac7';
-            hoverColor = 'var(--duo-blue)';
-        } else if (difficulty === 'dificil') {
-            color = 'var(--duo-purple)';
-            btnColor = '#7730b9';
-            hoverColor = 'var(--duo-purple)';
+        switch(gameMode) {
+            case 'normal':
+                if (difficulty === 'facil') { color = 'var(--duo-green)'; btnColor = 'var(--duo-dark-green)'; }
+                else if (difficulty === 'normal') { color = 'var(--duo-blue)'; btnColor = '#1a8ac7'; }
+                else if (difficulty === 'dificil') { color = 'var(--duo-purple)'; btnColor = '#7730b9'; }
+                break;
+            case 'supervivencia':
+                color = 'var(--duo-blue)'; btnColor = '#1a8ac7';
+                break;
+            case 'combo':
+                color = 'var(--duo-purple)'; btnColor = '#7730b9';
+                break;
+            case 'powerups':
+                color = 'var(--duo-orange)'; btnColor = '#f39c12';
+                break;
+            case 'desafio-verano':
+                color = '#f1c40f'; btnColor = '#e67e22';
+                break;
         }
         
         startGameBtn.style.backgroundColor = color;
         startGameBtn.style.boxShadow = `0 4px 0 ${btnColor}`;
-        
-        document.documentElement.style.setProperty('--line-color', color);
-        document.documentElement.style.setProperty('--hover-shadow', btnColor);
-        document.documentElement.style.setProperty('--hover-color', hoverColor);
-        
-        document.querySelectorAll('.difficulty-btn').forEach(btn => {
-            btn.style.setProperty('--hover-color', '#e0e0e0');
-        });
-        document.querySelector(`.difficulty-btn[data-difficulty="${difficulty}"]`).style.setProperty('--hover-color', color);
     }
     
     // --- Main Game Logic ---
@@ -96,49 +132,78 @@ document.addEventListener('DOMContentLoaded', () => {
         score = 0;
         extraTimeWon = 0;
         scoreDisplay.textContent = score;
+        isTimerFrozen = false;
         
         clearInterval(timer);
         clearInterval(goldCircleInterval);
 
-        if (difficulty === 'facil') {
-            timeLeft = 120;
-        } else if (difficulty === 'normal' || difficulty === 'dificil') {
-            timeLeft = 90;
+        gridContainer.classList.remove('game-over');
+        
+        // Ocultar elementos de otros modos
+        comboAnimationContainer.classList.add('hidden');
+        powerupsContainer.classList.add('hidden');
+        
+        // Configuración según el modo
+        switch(gameMode) {
+            case 'normal':
+                if (difficulty === 'facil') timeLeft = 120;
+                else if (difficulty === 'normal') timeLeft = 90;
+                else if (difficulty === 'dificil') timeLeft = 90;
+                break;
+            case 'supervivencia':
+                timeLeft = 30;
+                break;
+            case 'combo':
+                timeLeft = 90;
+                comboAnimationContainer.classList.remove('hidden');
+                break;
+            case 'powerups':
+                timeLeft = 120;
+                powerupsContainer.classList.remove('hidden');
+                resetPowerups();
+                break;
+            case 'desafio-verano':
+                timeLeft = 120;
+                break;
         }
         
         timerDisplay.textContent = formatTime(timeLeft);
-        
-        setTargetNumber(true); // Generar al inicio
-        currentSumDisplay.innerHTML = '???';
+        timerDisplay.classList.remove('animate-freeze');
         
         selectedCircles = [];
         currentSum = 0;
         linesSvg.innerHTML = '';
-        
         gridContainer.innerHTML = '';
+        
         generateGrid();
+        setTargetNumber();
+        currentSumDisplay.innerHTML = '???';
+        
         startTimer();
         
-        if (difficulty === 'dificil') {
+        if (difficulty === 'dificil' && gameMode === 'normal') {
             startGoldCircleGeneration();
         }
+        hideComboAnimation();
     }
 
-    function setTargetNumber(initial) {
-        if (initial || difficulty === 'dificil') {
-            let min, max;
-            if (difficulty === 'facil') {
-                min = 10;
-                max = 15;
-            } else if (difficulty === 'normal') {
-                min = 12;
-                max = 20;
-            } else if (difficulty === 'dificil') {
-                min = 15;
-                max = 25;
-            }
-            targetNumber = Math.floor(Math.random() * (max - min + 1)) + min;
+    function setTargetNumber() {
+        let min, max;
+        if (gameMode === 'supervivencia' || gameMode === 'desafio-verano') {
+            min = 10;
+            max = 15;
+        } else if (difficulty === 'facil') {
+            min = 10;
+            max = 15;
+        } else if (difficulty === 'normal') {
+            min = 12;
+            max = 20;
+        } else if (difficulty === 'dificil') {
+            min = 15;
+            max = 25;
         }
+        
+        targetNumber = Math.floor(Math.random() * (max - min + 1)) + min;
         targetNumberDisplay.textContent = targetNumber;
     }
 
@@ -151,7 +216,7 @@ document.addEventListener('DOMContentLoaded', () => {
             circle.dataset.row = Math.floor(i / COLS);
             circle.dataset.col = i % COLS;
             
-            const randomNumber = Math.floor(Math.random() * 9) + 1;
+            let randomNumber = Math.floor(Math.random() * 9) + 1;
             circle.textContent = randomNumber;
             
             circle.addEventListener('click', () => handleCircleClick(circle));
@@ -162,7 +227,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function startGoldCircleGeneration() {
         goldCircleInterval = setInterval(() => {
-            const circles = document.querySelectorAll('.circle');
+            const circles = document.querySelectorAll('.circle:not(.beach-ball)');
             if (circles.length === 0) return;
             
             const activeGoldCircles = document.querySelectorAll('.circle.gold');
@@ -196,11 +261,19 @@ document.addEventListener('DOMContentLoaded', () => {
 
         return (rowDiff <= 1 && colDiff <= 1) && !(rowDiff === 0 && colDiff === 0);
     }
-    
+
     function handleCircleClick(circle) {
         if (isGameOver) return;
-
+        
+        if (activePowerup) {
+            usePowerup(activePowerup, circle);
+            activePowerup = null;
+            powerupButtons.forEach(btn => btn.classList.remove('active-powerup'));
+            return;
+        }
+        
         const isGold = circle.classList.contains('gold');
+        const isBeachBall = circle.classList.contains('beach-ball');
 
         if (circle.classList.contains('selected')) {
             if (selectedCircles[selectedCircles.length - 1].element === circle) {
@@ -215,8 +288,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 circle.classList.add('selected');
                 selectedCircles.push({
                     element: circle,
-                    value: parseInt(circle.textContent),
-                    isGold: isGold
+                    value: isBeachBall ? 0 : parseInt(circle.textContent), // La pelota no suma
+                    isGold: isGold,
+                    isBeachBall: isBeachBall
                 });
             } else {
                 resetSelection();
@@ -232,23 +306,36 @@ document.addEventListener('DOMContentLoaded', () => {
         let sumValue = selectedCircles.reduce((sum, num) => sum + num.value, 0);
         currentSum = sumValue;
         
+        if (gameMode === 'combo' && selectedCircles.length > 1) {
+            comboAnimationContainer.classList.remove('hidden');
+            showComboAnimation(selectedCircles.length);
+        } else {
+            hideComboAnimation();
+        }
+
         if (selectedCircles.length > 0) {
-            const sumString = selectedCircles.map(num => num.value).join('<span class="op"> + </span>');
+            const sumString = selectedCircles.map(item => item.isBeachBall ? '🏖️' : item.value).join('<span class="op"> + </span>');
             currentSumDisplay.innerHTML = `${sumString}`;
 
-            if (currentSum === targetNumber) {
+            let isCorrect = currentSum === targetNumber;
+
+            if (isCorrect) {
                 let hasGold = false;
+                let hasBeachBall = false;
                 selectedCircles.forEach(c => {
                     c.element.classList.add('correct');
                     if (c.isGold) {
                         hasGold = true;
                     }
+                    if (c.isBeachBall) {
+                        hasBeachBall = true;
+                    }
                 });
 
                 playAudio(correctAudio);
                 showFeedback('¡Correcto!', 'correct');
-                addPoint(hasGold);
-
+                addPoint(hasGold, selectedCircles.length, hasBeachBall);
+                
                 setTimeout(() => {
                     regenerateNumbers();
                 }, 700);
@@ -264,6 +351,7 @@ document.addEventListener('DOMContentLoaded', () => {
         } else {
             currentSumDisplay.innerHTML = '???';
             hideFeedback();
+            hideComboAnimation();
         }
     }
 
@@ -288,13 +376,26 @@ document.addEventListener('DOMContentLoaded', () => {
         currentSumDisplay.innerHTML = '???';
         linesSvg.innerHTML = '';
         hideFeedback();
+        hideComboAnimation();
     }
-
+    
     function regenerateNumbers() {
         selectedCircles.forEach(c => {
-            const newNumber = Math.floor(Math.random() * 9) + 1;
-            c.element.textContent = newNumber;
-            c.element.classList.remove('selected', 'correct', 'error', 'gold');
+            c.element.classList.remove('selected', 'correct', 'error', 'gold', 'beach-ball');
+
+            if (gameMode === 'desafio-verano') {
+                // Probabilidad duplicada a 12% de que aparezca una pelota de playa
+                const isBeachBall = Math.random() < 0.12; 
+                if (isBeachBall) {
+                    c.element.classList.add('beach-ball');
+                } else {
+                    const newNumber = Math.floor(Math.random() * 9) + 1;
+                    c.element.textContent = newNumber;
+                }
+            } else {
+                const newNumber = Math.floor(Math.random() * 9) + 1;
+                c.element.textContent = newNumber;
+            }
         });
         
         selectedCircles = [];
@@ -302,9 +403,9 @@ document.addEventListener('DOMContentLoaded', () => {
         currentSumDisplay.innerHTML = '???';
         linesSvg.innerHTML = '';
         hideFeedback();
-        setTargetNumber(false); // No cambiar en Facil/Normal
+        setTargetNumber();
     }
-
+    
     function drawLines() {
         linesSvg.innerHTML = '';
         if (selectedCircles.length > 1) {
@@ -339,11 +440,13 @@ document.addEventListener('DOMContentLoaded', () => {
     function startTimer() {
         clearInterval(timer);
         timer = setInterval(() => {
-            if (timeLeft <= 0) {
-                endGame();
-            } else {
-                timeLeft--;
-                timerDisplay.textContent = formatTime(timeLeft);
+            if (!isTimerFrozen) {
+                if (timeLeft <= 0) {
+                    endGame();
+                } else {
+                    timeLeft--;
+                    timerDisplay.textContent = formatTime(timeLeft);
+                }
             }
         }, 1000);
     }
@@ -358,36 +461,70 @@ document.addEventListener('DOMContentLoaded', () => {
         }, 1000);
     }
 
+    function freezeTimer(seconds) {
+        isTimerFrozen = true;
+        timerDisplay.classList.add('animate-freeze');
+        setTimeout(() => {
+            isTimerFrozen = false;
+            timerDisplay.classList.remove('animate-freeze');
+        }, seconds * 1000);
+    }
+
     function formatTime(seconds) {
         const minutes = Math.floor(seconds / 60);
         const remainingSeconds = seconds % 60;
         return `${minutes}:${remainingSeconds < 10 ? '0' : ''}${remainingSeconds}`;
     }
 
-    function addPoint(hasGold) {
-        if (hasGold) {
-            score += 2;
+    function addPoint(hasGold, chainLength, hasBeachBall) {
+        let scoreToAdd = 1;
+
+        if (gameMode === 'combo') {
+            let multiplier = 1;
+            if (comboMultipliers[chainLength]) {
+                multiplier = comboMultipliers[chainLength];
+            } else if (chainLength >= 6) {
+                multiplier = 5;
+            }
+            scoreToAdd = chainLength * multiplier;
+        } else if (hasGold) {
+            scoreToAdd = 2;
             addTime(10);
-            triggerGoldConfetti();
-        } else {
-            score++;
         }
+        
+        // Lógica para la pelota de playa
+        if (gameMode === 'desafio-verano' && hasBeachBall) {
+            scoreToAdd += 1;
+        }
+
+        score += scoreToAdd;
         scoreDisplay.textContent = score;
         scoreDisplay.style.transform = 'scale(1.2)';
         setTimeout(() => {
             scoreDisplay.style.transform = 'scale(1)';
         }, 300);
+
+        if (gameMode === 'supervivencia') {
+            addTime(5);
+        }
+    }
+    
+    function showComboAnimation(chainLength) {
+        if (chainLength < 2) {
+            hideComboAnimation();
+            return;
+        }
+
+        comboAnimationContainer.classList.add('active');
+        const multiplier = comboMultipliers[chainLength] || (chainLength >= 6 ? 5 : 1);
+        
+        comboText.textContent = `x${multiplier}`;
+        comboText.classList.add('combo-text-active');
     }
 
-    function triggerGoldConfetti() {
-        for (let i = 0; i < 30; i++) {
-            const confetti = document.createElement('div');
-            confetti.classList.add('gold-confetti');
-            confetti.style.left = `${Math.random() * 100}%`;
-            confetti.style.animationDuration = `${Math.random() * 3 + 2}s`;
-            goldConfettiContainer.appendChild(confetti);
-        }
-        setTimeout(() => goldConfettiContainer.innerHTML = '', 3000);
+    function hideComboAnimation() {
+        comboAnimationContainer.classList.remove('active');
+        comboText.classList.remove('combo-text-active');
     }
 
     function endGame() {
@@ -396,9 +533,10 @@ document.addEventListener('DOMContentLoaded', () => {
         isGameOver = true;
         playAudio(gameOverAudio);
         gridContainer.classList.add('game-over');
+        
         showScreen('end-game-screen');
         animateFinalScore();
-        if (difficulty === 'dificil') {
+        if (difficulty === 'dificil' && gameMode === 'normal') {
             extraTimeDisplay.textContent = `Tiempo extra ganado: ${extraTimeWon}s`;
             extraTimeDisplay.style.display = 'block';
         } else {
@@ -420,13 +558,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function createFireworks() {
-        for (let i = 0; i < 10; i++) {
-            const firework = document.createElement('div');
-            firework.classList.add('firework');
-            firework.style.top = `${Math.random() * 100}%`;
-            firework.style.left = `${Math.random() * 100}%`;
-            endGameScreen.appendChild(firework);
-        }
+        // Implementación de fuegos artificiales
     }
 
     function playAudio(audioElement) {
@@ -435,8 +567,97 @@ document.addEventListener('DOMContentLoaded', () => {
             audioElement.play();
         }
     }
+    
+    // --- PowerUps Logic ---
+    powerupButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            if (!button.disabled) {
+                activePowerup = button.dataset.powerup;
+                powerupButtons.forEach(btn => btn.classList.remove('active-powerup'));
+                button.classList.add('active-powerup');
+            }
+        });
+    });
 
-    // Initialize with start screen visible and easy difficulty selected
+    function usePowerup(powerup, circle) {
+        const button = document.querySelector(`.powerup-btn[data-powerup="${powerup}"]`);
+        
+        if (powerup === 'bomb') {
+            const row = parseInt(circle.dataset.row);
+            const col = parseInt(circle.dataset.col);
+            
+            const circlesToClear = [];
+            for (let i = -1; i <= 1; i++) {
+                for (let j = -1; j <= 1; j++) {
+                    const adjRow = row + i;
+                    const adjCol = col + j;
+                    const adjCircle = document.querySelector(`.circle[data-row="${adjRow}"][data-col="${adjCol}"]`);
+                    if (adjCircle) {
+                        circlesToClear.push(adjCircle);
+                    }
+                }
+            }
+            
+            circlesToClear.forEach(c => c.classList.add('explode-circle'));
+            setTimeout(() => {
+                 circlesToClear.forEach(c => {
+                    const newNumber = Math.floor(Math.random() * 9) + 1;
+                    c.textContent = newNumber;
+                    c.classList.remove('gold', 'explode-circle', 'beach-ball');
+                });
+            }, 500);
+
+        } else if (powerup === 'freeze') {
+            freezeTimer(10);
+            
+        } else if (powerup === 'clearline') {
+             const row = parseInt(circle.dataset.row);
+             const col = parseInt(circle.dataset.col);
+             const circlesToClear = document.querySelectorAll(`.circle[data-row="${row}"], .circle[data-col="${col}"]`);
+             circlesToClear.forEach(c => c.classList.add('explode-circle'));
+             setTimeout(() => {
+                 circlesToClear.forEach(c => {
+                    const newNumber = Math.floor(Math.random() * 9) + 1;
+                    c.textContent = newNumber;
+                    c.classList.remove('gold', 'explode-circle', 'beach-ball');
+                });
+            }, 500);
+        }
+
+        button.disabled = true;
+        button.classList.remove('active-powerup');
+        startCooldown(button, cooldowns[powerup]);
+    }
+    
+    function startCooldown(button, cooldown) {
+        const timerSpan = button.querySelector('.cooldown-timer');
+        timerSpan.textContent = cooldown;
+        timerSpan.style.opacity = 1;
+        
+        let timeLeft = cooldown;
+        const interval = setInterval(() => {
+            timeLeft--;
+            timerSpan.textContent = timeLeft;
+            if (timeLeft <= 0) {
+                clearInterval(interval);
+                timerSpan.style.opacity = 0;
+                button.disabled = false;
+            }
+        }, 1000);
+    }
+    
+    function resetPowerups() {
+        powerupButtons.forEach(btn => {
+            btn.disabled = false;
+            btn.classList.remove('active-powerup');
+            const timerSpan = btn.querySelector('.cooldown-timer');
+            if (timerSpan) timerSpan.style.opacity = 0;
+        });
+        activePowerup = null;
+    }
+
+
+    // Inicializar la aplicación
     showScreen('start-screen');
-    updateDifficultyStyles();
+    updateStartButtonColor();
 });
