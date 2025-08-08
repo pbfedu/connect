@@ -11,24 +11,42 @@
     --line-color: var(--duo-blue);
     --hover-color: var(--duo-dark-green);
     --hover-shadow: var(--duo-dark-green);
-    --voltimetro-green: #2ecc71;
-    --voltimetro-blue: #3498db;
-    --voltimetro-purple: #9b59b6;
-    --voltimetro-orange: #f39c12;
+    --beach-ball-yellow: #ffd815;
+    --beach-ball-pink: #ff9fcf;
+    --beach-ball-orange: #ff7300;
 }
 
 /* General Layout and Responsiveness */
+html, body {
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    font-family: 'Roboto', sans-serif;
+    color: var(--text-color);
+    box-sizing: border-box;
+}
+
+*, *::before, *::after {
+    box-sizing: inherit;
+}
+
 body {
     display: flex;
     justify-content: center;
     align-items: center;
     min-height: 100vh;
     background: linear-gradient(135deg, #f0f0f0, #e0e0e0);
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-    margin: 0;
     overflow: hidden;
-    color: var(--text-color);
 }
+
+main {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    min-height: 100vh;
+}
+
 .hidden {
     display: none !important;
 }
@@ -83,6 +101,7 @@ body {
 .game-mode-menu, .difficulty-menu {
     width: 100%;
 }
+
 .mode-options, .difficulty-options {
     display: flex;
     gap: 10px;
@@ -99,6 +118,8 @@ body {
     font-weight: bold;
     cursor: pointer;
     transition: background-color 0.2s, border-color 0.2s;
+    flex-grow: 1; /* Permite que los botones se expandan */
+    max-width: 150px; /* Limita el tamaño en pantallas grandes */
 }
 
 .mode-btn:hover, .difficulty-btn:hover {
@@ -158,6 +179,7 @@ body {
     gap: 20px;
     width: 100%;
 }
+
 .game-container {
     width: 100%;
     max-width: 450px;
@@ -165,6 +187,7 @@ body {
     display: flex;
     flex-direction: column;
 }
+
 header {
     display: flex;
     justify-content: space-between;
@@ -183,6 +206,7 @@ header {
     font-weight: bold;
     box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
     position: relative;
+    white-space: nowrap; /* Evita que el texto se rompa */
 }
 
 #score-display {
@@ -200,6 +224,7 @@ header {
     font-weight: 600;
     margin: 0;
 }
+
 .header-center h1:first-child {
     margin-bottom: 5px;
 }
@@ -208,7 +233,6 @@ header {
     color: var(--duo-blue);
     font-weight: 800;
 }
-
 
 .current-sum-display {
     min-height: 40px;
@@ -246,6 +270,7 @@ header {
 #timer.animate-add {
     animation: pulsate-time 1s ease-in-out;
 }
+
 #timer.animate-freeze {
     background-color: var(--duo-blue);
     color: #fff;
@@ -329,70 +354,40 @@ header {
     box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
 }
 
-/* Nuevo estilo para la pelota de playa, basado en tu diseño */
 .circle.beach-ball {
-    position: relative;
-    transform: rotate(40deg);
     background-color: var(--beach-ball-yellow);
-    clip-path: circle(100% at center);
-    
-    /* El contenido del número se ocultará */
     font-size: 0;
     color: transparent;
+    position: relative;
     overflow: hidden;
 }
 
 .circle.beach-ball::before {
     content: '';
     position: absolute;
-    right: 34px;
+    top: 0;
+    left: 0;
     width: 100%;
     height: 100%;
-    background-color: var(--beach-ball-orange);
-    clip-path: ellipse(80px 110px);
-    z-index: 0;
-}
-
-.circle.beach-ball::after {
-    content: '';
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    left: -50%;
-    background-color: var(--beach-ball-pink);
-    overflow: hidden;
-    z-index: 10;
-}
-
-.circle.beach-ball .half-before {
-    content: '';
-    position: absolute;
-    right: -134px;
-    width: 100%;
-    height: 100%;
-    background-color: var(--beach-ball-orange);
-    clip-path: ellipse(80px 110px);
+    background: linear-gradient(45deg, var(--beach-ball-orange) 25%, transparent 25%, transparent 50%, var(--beach-ball-orange) 50%, var(--beach-ball-orange) 75%, transparent 75%, transparent);
+    background-size: 100% 100%;
     z-index: 1;
 }
 
-.circle.beach-ball .center {
-    content: '';
+.circle.beach-ball::after {
+    content: '🏖️'; /* Emoji para representación, o una imagen si se prefiere */
+    font-size: 1.8em;
     position: absolute;
-    top: -25px;
+    top: 50%;
     left: 50%;
-    width: 50px;
-    height: 50px;
-    background-color: #fff;
-    border-radius: 50%;
-    z-index: 20;
-    transform: translateX(-50%);
+    transform: translate(-50%, -50%);
+    z-index: 2;
 }
 
 .circle.beach-ball.selected {
-    background-color: var(--beach-ball-pink); /* Color de selección para la pelota */
+    transform: scale(1.1);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
 }
-
-/* ... (el resto del CSS sigue igual) ... */
 
 .circle.gold {
     box-shadow: 0 0 10px 5px gold;
@@ -414,6 +409,7 @@ header {
     transform: scale(1.1);
     box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
 }
+
 .circle.correct {
     background-color: var(--duo-green);
     color: #fff;
@@ -432,6 +428,7 @@ header {
     opacity: 0.5;
     pointer-events: none;
 }
+
 .circle.explode-circle {
     animation: explode 0.5s ease-out forwards;
 }
@@ -441,36 +438,95 @@ header {
     100% { transform: scale(2); opacity: 0; }
 }
 
-
-#gold-confetti-container {
+/* Combo Animation */
+.combo-animation-container {
     position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 80px;
+    height: 80px;
     pointer-events: none;
-    overflow: hidden;
-    z-index: 20;
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-end;
+    z-index: 10;
 }
 
-.gold-confetti {
+.combo-animation-container.active {
+    display: flex;
+}
+
+#combo-text {
     position: absolute;
-    width: 10px;
-    height: 10px;
-    background-color: gold;
-    animation: confetti-fall 3s linear forwards;
+    bottom: 50%;
+    font-size: 2.5em;
+    font-weight: 900;
+    color: #fff;
+    text-shadow: 0 0 5px #000;
     opacity: 0;
+    transition: opacity 0.3s;
 }
 
-@keyframes confetti-fall {
-    0% {
-        transform: translateY(0) rotate(0deg);
-        opacity: 1;
-    }
-    100% {
-        transform: translateY(100vh) rotate(720deg);
-        opacity: 0;
-    }
+.combo-text-active {
+    opacity: 1 !important;
+}
+
+/* PowerUps Interface */
+#powerups-container {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    align-self: center;
+    margin-right: 0;
+    margin-left: 20px;
+}
+
+.powerup-btn {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background-color: var(--duo-blue);
+    border: none;
+    color: white;
+    cursor: pointer;
+    box-shadow: 0 4px 0 #1a8ac7;
+    position: relative;
+}
+
+.powerup-btn:hover {
+    transform: translateY(2px);
+    box-shadow: 0 2px 0 #1a8ac7;
+}
+
+.powerup-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    background-color: #ccc;
+    box-shadow: 0 4px 0 #999;
+}
+
+.powerup-btn.active-powerup {
+    background-color: var(--duo-orange);
+    box-shadow: 0 4px 0 #f39c12;
+}
+
+.powerup-icon {
+    font-size: 1.8em;
+}
+
+.cooldown-timer {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 1.2em;
+    font-weight: bold;
+    color: white;
+    text-shadow: 0 0 3px black;
+    opacity: 0;
+    transition: opacity 0.3s;
 }
 
 /* End Game Screen */
@@ -496,14 +552,8 @@ header {
 }
 
 @keyframes fade-in-up {
-    from {
-        opacity: 0;
-        transform: translateY(50px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
+    from { opacity: 0; transform: translateY(50px); }
+    to { opacity: 1; transform: translateY(0); }
 }
 
 #final-score {
@@ -513,172 +563,78 @@ header {
     margin: 20px 0;
 }
 
-/* Fireworks */
-.firework {
-    position: absolute;
-    width: 10px;
-    height: 10px;
-    opacity: 0;
-    border-radius: 50%;
-    background: #ff5722;
-    animation: firework 2s ease-out forwards;
-}
-
-.firework::before {
-    content: '';
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    width: 2px;
-    height: 2px;
-    background: #fff;
-    border-radius: 50%;
-    animation: sparkle 2s ease-out forwards;
-}
-
-@keyframes firework {
-    0% {
-        transform: scale(0);
-        opacity: 0;
-    }
-    10% {
-        transform: scale(1);
-        opacity: 1;
-    }
-    100% {
-        transform: scale(2);
-        opacity: 0;
-    }
-}
-@keyframes sparkle {
-    0% {
-        box-shadow: 0 0 0 rgba(255, 255, 255, 0);
-    }
-    100% {
-        box-shadow: 0 0 20px 10px rgba(255, 255, 255, 0.8),
-                    0 0 30px 15px rgba(255, 255, 255, 0.6),
-                    0 0 40px 20px rgba(255, 255, 255, 0.4);
-    }
-}
-
-/* Combo Animation */
-.combo-animation-container {
-    position: absolute;
-    bottom: 0;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 80px;
-    height: 80px;
-    pointer-events: none;
-    display: none;
-    flex-direction: column;
-    align-items: center;
-    justify-content: flex-end;
-    z-index: 10;
-}
-.combo-animation-container.active {
-    display: flex;
-}
-#combo-fire {
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(to top, var(--duo-red), var(--duo-orange), #ffeb3b);
-    filter: blur(5px);
-    border-radius: 50% 50% 0 0;
-    animation: fire-pulse 1s infinite alternate;
-}
-@keyframes fire-pulse {
-    from { transform: scaleX(0.8); opacity: 0.8; }
-    to { transform: scaleX(1.1); opacity: 1; }
-}
-#combo-text {
-    position: absolute;
-    bottom: 50%;
-    font-size: 2.5em;
-    font-weight: 900;
-    color: #fff;
-    text-shadow: 0 0 5px #000;
-    opacity: 0;
-    transition: opacity 0.3s;
-}
-.combo-text-active {
-    opacity: 1 !important;
-}
-
-/* PowerUps Interface */
-#powerups-container {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    align-self: center;
-    margin-right: 0;
-    margin-left: 20px;
-}
-#powerups-container.hidden {
-    display: none;
-}
-
+/* Mobile Responsiveness */
 @media (max-width: 768px) {
+    .screen {
+        width: 95%;
+        padding: 15px;
+    }
+
+    .main-btn {
+        font-size: 1em;
+        padding: 12px 25px;
+    }
+    
+    .mode-options, .difficulty-options {
+        gap: 5px;
+        flex-wrap: wrap;
+    }
+    
+    .mode-btn, .difficulty-btn {
+        font-size: 0.8em;
+        padding: 8px 15px;
+        min-width: 80px;
+        flex-grow: 1;
+    }
+
     .game-content {
         flex-direction: column;
         align-items: center;
+        gap: 15px;
     }
+    
+    header {
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 10px;
+    }
+    
+    .header-left, .header-right {
+        font-size: 1em;
+        padding: 6px 12px;
+    }
+    
+    .header-center h1 {
+        font-size: 1em;
+    }
+    
+    .current-sum-display {
+        font-size: 1.5em;
+        margin-bottom: 15px;
+    }
+    
+    .grid-container {
+        gap: 10px;
+    }
+    
+    .circle {
+        font-size: 1.5em;
+    }
+
     #powerups-container {
         flex-direction: row;
-        margin-top: 20px;
         margin-left: 0;
         justify-content: center;
+        gap: 10px;
+        order: 1; /* Esto hace que los power-ups aparezcan encima de la cuadrícula en móvil */
     }
-    .game-container {
-        width: 100%;
-    }
-}
 
-.powerup-btn {
-    width: 60px;
-    height: 60px;
-    background-color: var(--duo-bg-dark);
-    border-radius: 50%;
-    border: 2px solid #ddd;
-    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
-    cursor: pointer;
-    position: relative;
-    transition: transform 0.2s, box-shadow 0.2s;
-}
-.powerup-btn:hover {
-    transform: scale(1.1);
-}
-.powerup-btn.active-powerup {
-    border-color: var(--duo-orange);
-    box-shadow: 0 0 10px 5px var(--duo-orange);
-    animation: active-powerup-pulse 1s infinite alternate;
-}
-@keyframes active-powerup-pulse {
-    from { box-shadow: 0 0 10px 5px var(--duo-orange); }
-    to { box-shadow: 0 0 15px 8px var(--duo-orange); }
-}
-.powerup-btn:disabled {
-    cursor: not-allowed;
-    opacity: 0.5;
-}
-.cooldown-timer {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    font-size: 1.2em;
-    font-weight: bold;
-    color: #fff;
-    background-color: rgba(0, 0, 0, 0.7);
-    width: 100%;
-    height: 100%;
-    border-radius: 50%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    opacity: 0;
-    transition: opacity 0.3s;
-}
-.powerup-icon {
-    font-size: 1.8em;
+    .powerup-btn {
+        width: 50px;
+        height: 50px;
+    }
+
+    .powerup-icon {
+        font-size: 1.5em;
+    }
 }
