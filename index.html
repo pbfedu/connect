@@ -3,99 +3,98 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Connect + | By Worksphere</title>
+    <title>Suma Link</title>
     <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 </head>
 <body>
-    <div id="start-screen" class="screen active">
-        <div class="menu-container">
-            <h1>Connect +</h1>
-            
-            <div class="game-mode-menu">
-                <h2>Modo de Juego</h2>
-                <div class="mode-options">
-                    <button class="mode-btn active" data-mode="normal">Normal</button>
-                    <button class="mode-btn" data-mode="supervivencia">Supervivencia ⭐</button>
-                    <button class="mode-btn" data-mode="combo">Combo 🔥</button>
-                    <button class="mode-btn" data-mode="powerups">PowerUps ⚡</button>
-                    <button class="mode-btn" data-mode="desafio-verano">Desafío de Verano 🏖️</button>
+    <main>
+        <div id="start-screen" class="screen active">
+            <h1>Suma Link</h1>
+            <div class="menu-container">
+                <div class="game-mode-menu">
+                    <h2>Modo de Juego</h2>
+                    <div class="mode-options">
+                        <button class="mode-btn active" data-mode="normal">Normal</button>
+                        <button class="mode-btn" data-mode="supervivencia">Supervivencia</button>
+                        <button class="mode-btn" data-mode="combo">Combo</button>
+                        <button class="mode-btn" data-mode="powerups">Power-Ups</button>
+                        <button class="mode-btn" data-mode="desafio-verano">Desafío Verano</button>
+                    </div>
+                </div>
+                <div id="difficulty-menu" class="difficulty-menu">
+                    <h2>Dificultad</h2>
+                    <div class="difficulty-options">
+                        <button class="difficulty-btn active" data-difficulty="facil">Fácil</button>
+                        <button class="difficulty-btn" data-difficulty="normal">Normal</button>
+                        <button class="difficulty-btn" data-difficulty="dificil">Difícil</button>
+                    </div>
                 </div>
             </div>
-
-            <div id="difficulty-menu" class="difficulty-menu">
-                <h2>Dificultad</h2>
-                <div class="difficulty-options">
-                    <button class="difficulty-btn active" data-difficulty="facil">Fácil</button>
-                    <button class="difficulty-btn" data-difficulty="normal">Normal</button>
-                    <button class="difficulty-btn" data-difficulty="dificil">Difícil</button>
-                </div>
-            </div>
-
-            <button id="start-game-btn" class="main-btn">¡Empezar a Jugar!</button>
+            <button id="start-game-btn" class="main-btn">Empezar Juego</button>
         </div>
-    </div>
 
-    <div id="game-screen" class="screen">
-        <header>
-            <div class="header-left">
-                <i class="fas fa-star"></i>
-                <span id="score-display">0</span>
-            </div>
-            <div class="header-center">
-                <h1>Objetivo: <span id="target-number"></span></h1>
-            </div>
-            <div class="header-right">
-                <i class="fas fa-clock"></i>
-                <span id="timer"></span>
-            </div>
-        </header>
-
-        <div class="game-content">
-            <div class="game-container">
-                <div class="current-sum-display">
-                    <span id="sum-text">???</span>
-                    <span id="feedback-text" class="feedback-text"></span>
+        <div id="game-screen" class="screen">
+            <div class="game-content">
+                <div class="game-container">
+                    <header>
+                        <div class="header-left">
+                            <i class="fas fa-star"></i>
+                            <span id="score-display">0</span>
+                        </div>
+                        <div class="header-center">
+                            <h1>Objetivo</h1>
+                            <h1 id="target-number">10</h1>
+                        </div>
+                        <div class="header-right">
+                            <i class="fas fa-clock"></i>
+                            <span id="timer">0:00</span>
+                        </div>
+                    </header>
+                    <div class="current-sum-display">
+                        <span id="sum-text">???</span>
+                        <div id="combo-animation-container" class="hidden">
+                            <div id="combo-fire"></div>
+                            <span id="combo-text"></span>
+                        </div>
+                        <span id="feedback-text" class="feedback-text"></span>
+                    </div>
+                    <div class="grid-wrapper">
+                        <svg id="lines-svg"></svg>
+                        <div id="grid-container" class="grid-container"></div>
+                    </div>
                 </div>
-                
-                <div class="grid-wrapper">
-                    <svg id="lines-svg"></svg>
-                    <div id="grid-container" class="grid-container"></div>
+                <div id="powerups-container" class="hidden">
+                    <button class="powerup-btn" data-powerup="bomb">
+                        <i class="fas fa-bomb powerup-icon"></i>
+                        <span class="cooldown-timer"></span>
+                    </button>
+                    <button class="powerup-btn" data-powerup="freeze">
+                        <i class="fas fa-ice-cream powerup-icon"></i>
+                        <span class="cooldown-timer"></span>
+                    </button>
+                    <button class="powerup-btn" data-powerup="clearline">
+                        <i class="fas fa-broom powerup-icon"></i>
+                        <span class="cooldown-timer"></span>
+                    </button>
                 </div>
-                <div id="combo-animation-container" class="combo-animation-container hidden">
-                    <div id="combo-fire"></div>
-                    <span id="combo-text">x2</span>
-                </div>
-            </div>
-
-            <div id="powerups-container" class="powerups-container hidden">
-                <button class="powerup-btn" data-powerup="bomb">
-                    <i class="fas fa-bomb powerup-icon"></i>
-                    <span class="cooldown-timer"></span>
-                </button>
-                <button class="powerup-btn" data-powerup="freeze">
-                    <i class="fas fa-hourglass-half powerup-icon"></i>
-                    <span class="cooldown-timer"></span>
-                </button>
-                <button class="powerup-btn" data-powerup="clearline">
-                    <i class="fas fa-bolt powerup-icon"></i>
-                    <span class="cooldown-timer"></span>
-                </button>
             </div>
         </div>
-    </div>
 
-    <div id="end-game-screen" class="screen">
-        <div class="end-game-container">
-            <h1>¡Juego Terminado!</h1>
-            <p>Puntuación Final:</p>
-            <p id="final-score">0</p>
-            <p id="extra-time-display" style="display: none;"></p>
-            <button id="restart-game-btn" class="main-btn">Volver al menú</button>
+        <div id="end-game-screen" class="screen">
+            <div class="end-game-container">
+                <h2>¡Fin del Juego!</h2>
+                <p>Tu Puntuación Final:</p>
+                <div id="final-score">0</div>
+                <p id="extra-time-display"></p>
+                <button id="restart-game-btn" class="main-btn">Volver a Jugar</button>
+            </div>
         </div>
-    </div>
+    </main>
 
-    <div id="gold-confetti-container"></div>
     <script src="script.js"></script>
 </body>
 </html>
