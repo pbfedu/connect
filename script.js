@@ -384,7 +384,6 @@ document.addEventListener('DOMContentLoaded', () => {
             c.element.classList.remove('selected', 'correct', 'error', 'gold', 'beach-ball');
 
             if (gameMode === 'desafio-verano') {
-                // Probabilidad duplicada a 12% de que aparezca una pelota de playa
                 const isBeachBall = Math.random() < 0.12; 
                 if (isBeachBall) {
                     c.element.classList.add('beach-ball');
@@ -492,7 +491,6 @@ document.addEventListener('DOMContentLoaded', () => {
             addTime(10);
         }
         
-        // Lógica para la pelota de playa
         if (gameMode === 'desafio-verano' && hasBeachBall) {
             scoreToAdd += 1;
         }
@@ -655,7 +653,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
         activePowerup = null;
     }
-
 
     // Inicializar la aplicación
     showScreen('start-screen');
